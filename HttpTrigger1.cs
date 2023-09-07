@@ -1,3 +1,4 @@
+using System.Configuration;
 using System.Net;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace My.Functions
 {
+    
     public class HttpTrigger1
     {
         private readonly ILogger _logger;
@@ -28,3 +30,4 @@ namespace My.Functions
         }
     }
 }
+
