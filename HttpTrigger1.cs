@@ -16,18 +16,41 @@ namespace My.Functions
             _logger = loggerFactory.CreateLogger<HttpTrigger1>();
         }
 
-        [Function("HttpTrigger1")]
-        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
+       [Function("HttpExample")]
+public static MultiResponse Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req,
+    FunctionContext executionContext)
+{
+    var logger = executionContext.GetLogger("HttpExample");
+    logger.LogInformation("C# HTTP trigger function processed a request.");
+
+    var message = "Welcome to Azure Functions!";
+
+    var response = req.CreateResponse(HttpStatusCode.OK);
+    response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
+    response.WriteString(message);
+
+    // Return a response to both HTTP trigger and Azure Cosmos DB output binding.
+    return new MultiResponse()
+    {
+         Document = new MyDocument
         {
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
-
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
-
-            response.WriteString("Welcome to Azure Functions!");
-
-            return response;
-        }
+            id = System.Guid.NewGuid().ToString(),
+            message = message
+        },
+        HttpResponse = response
+    };
+}
     }
 }
 
+public class MultiResponse
+{
+    [CosmosDBOutput("my-database", "my-container",
+        ConnectionStringSetting = "CosmosDbConnectionString", CreateIfNotExists = true)]
+    public MyDocument Document { get; set; }
+    public HttpResponseData HttpResponse { get; set; }
+}
+public class MyDocument {
+    public string id { get; set; } = string.Empty;
+    public string message { get; set; } = string.Empty;
+}
